@@ -2,12 +2,13 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class NoteScreen extends StatefulWidget {
+  final String userId;
   final String noteName;
   final String title;
   final String words;
   final Function() updateList;
 
-  const NoteScreen({required this.noteName, required this.title, required this.words, required this.updateList, super.key});
+  const NoteScreen({required this.userId, required this.noteName, required this.title, required this.words, required this.updateList, super.key});
 
   @override
   State<NoteScreen> createState() => _NoteScreenState();
@@ -16,6 +17,7 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
 
   late TextEditingController textController;
+  late String userId;
   late String noteName;
   late String title;
   late String words;
@@ -24,6 +26,7 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   void initState(){
     textController = TextEditingController();
+    userId = widget.userId;
     noteName = widget.noteName;
     title = widget.title;
     words = widget.words;
@@ -35,7 +38,7 @@ class _NoteScreenState extends State<NoteScreen> {
   }
 
   void saveNote(String noteName, String title, String words) async {
-    await FirebaseDatabase.instance.ref("users/testUser/$noteName").ref.update({
+    await FirebaseDatabase.instance.ref("users/$userId/$noteName").ref.update({
       "title": title,
       "words": words
     });
@@ -43,7 +46,7 @@ class _NoteScreenState extends State<NoteScreen> {
   }
 
   void deleteNote(String noteName) async {
-    await FirebaseDatabase.instance.ref("users/testUser/$noteName").ref.remove();
+    await FirebaseDatabase.instance.ref("users/$userId/$noteName").ref.remove();
     await updateList();
   }
 
@@ -60,10 +63,13 @@ class _NoteScreenState extends State<NoteScreen> {
             icon: const Icon(Icons.delete)),
         ],
       ),
-      body: TextField(
-        controller: textController,
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: textController,
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

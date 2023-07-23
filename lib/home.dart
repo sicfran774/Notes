@@ -5,7 +5,8 @@ import 'package:notes_bootstrap/login.dart';
 import 'package:notes_bootstrap/note.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final String userId;
+  const HomeScreen({required this.userId, Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -14,11 +15,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   late final TextEditingController textController;
+  late final String userId;
   late List<Note> notesList;
 
   @override
   void initState() {
     textController = TextEditingController();
+    userId = widget.userId;
   }
 
   Future loadNotesFromFirebase() async {
@@ -26,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Note> temp = [];
     //Get current logged-in user's note data from Firebase Realtime Database
     try{
-      await FirebaseDatabase.instance.ref("users/testUser").once().then((data) {
+      await FirebaseDatabase.instance.ref("users/$userId").once().then((data) {
         //Convert retrieved notes into map
         var map = data.snapshot.value as Map<dynamic, dynamic>;
 
@@ -76,13 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Future createNote(String title) async {
     //Use current time to get a unique note number
     var now = DateTime.now().millisecondsSinceEpoch.toString();
-    await FirebaseDatabase.instance.ref("users/testUser/$now").ref.set({
+    await FirebaseDatabase.instance.ref("users/$userId/$now").ref.set({
       "noteName": now,
       "title": title,
       "words": "Default Text"
     }).then((value) {
       Navigator.pop(context); //Remove dialog
-      Navigator.push(context, MaterialPageRoute(builder: (context) => NoteScreen(updateList: updateList, noteName: now, title: title, words: "Default Text")));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => NoteScreen(userId: userId, updateList: updateList, noteName: now, title: title, words: "Default Text")));
     });
     updateList();
   }
@@ -151,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               return ElevatedButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>
                   NoteScreen(
+                      userId: userId,
                       noteName: notesList[index].noteName,
                       title: notesList[index].title,
                       words: notesList[index].words,

@@ -19,14 +19,20 @@ class _LoginPageState extends State<LoginPage> {
   var passwordError = "";
 
   void signIn(String email, String password) async {
-    bool success = false;
     try{
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      FirebaseAuth auth = FirebaseAuth.instance;
+      final credential = await auth.signInWithEmailAndPassword(
           email: email,
           password: password);
       //If the code reaches here, then the account was successfully created. If there were
-      //any errors, it would be caught and code would be run in the catch below this comment.
-      goToHome();
+      //any errors, it would be caught and code would be run in the catch block.
+      final user = auth.currentUser;
+      var userId = "testUser";
+      if(user != null){
+        userId = user.uid;
+      }
+
+      goToHome(userId);
     } on FirebaseAuthException catch (e){
       //Reset fields and recheck every error
       setState(() {
@@ -58,8 +64,8 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
   
-  void goToHome(){
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+  void goToHome(String userId){
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen(userId: userId)));
   }
 
 
